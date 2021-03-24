@@ -1,4 +1,4 @@
-#### from crazyhottommy/RNA-seq-analysis
+#### From crazyhottommy/RNA-seq-analysis
 
 ### Why I am testing again?
 
