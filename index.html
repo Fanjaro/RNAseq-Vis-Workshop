@@ -22332,6 +22332,12 @@
                     <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank">
                         <p><strong><i>https://github.com/Fanjaro/RNAseq-Vis-Workshop</i></strong>
                     </a>
+
+                    <p style="text-indent:2em">推荐资源</p>
+                    <a href="http://www.cookbook-r.com" target="_blank">
+                        <p><strong><i>http://www.cookbook-r.com</i></strong>
+                    </a>
+
                     </p>
                 </div>
 
@@ -22340,132 +22346,84 @@
                     <br>
                     <h1><span class="header-section-number"></span> <strong>概论</strong></h1>
                     <h4>
-                        <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>① 相关性分析</strong></a>
-                        <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>② 转录表达矩阵</strong></a>
+                        <li>
+                            <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>① 相关性检验</strong></a>
+                            <p style="text-indent:1em">1. 相关检验用于评估两个或多个变量之间的关联性。</p>
+                            <br>
+                            <p style="text-indent:1em">2. 相关检验方法常见有三种(连续变量): Pearson correlation(皮尔森相关性,参数),Spearman rho(斯皮尔曼秩相关，非参数)以及Kendall tau(肯德尔，非参数,等秩较多)</p>
+                            <br>
+                            <p style="text-indent:1em">3. 检验方法总览</p>
+                        </li>
+                        <br>
+                        <li>
+                            <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>② 降维/排序</strong></a>
+                            <p><pre class='r'><code>
+# 提取高纬度数据，得到低纬度的主成因
+# 主成分分析（PCA）是一种非常强大的技术，在数据科学、生物信息学等领域有着广泛的应用。它最初是为了分析大量数据，以便梳理出所分析的逻辑实体之间的差异/关系。
+# 数据的基本结构，而不需要构建任何模型来表示数据。数据的“摘要”是通过一个简化过程得出的，该过程可以将大量变量转换为不相关的较少变量（即“主成分”），
+# 同时能够轻松解释原始数据（Blighe和Lun 2019）（Blighe 2013）
+
+# 都有哪些
+1、只使用物种组成数据的排序称作非限制性排序(unconstrained ordination)
+(1)主成分分析(principal components analysis,PCA)
+(2)对应分析(correspondence analysis, CA)
+(3)去趋势对应分析(Detrended correspondence analysis, DCA)
+(3)主坐标分析(principal coordinate analysis, PCoA)
+(4)非度量多维尺度分析(non-metric multi-dimensional scaling, NMDS)
+
+2、同时使用物种和环境因子组成数据的排序叫作限制性排序(constrained ordination)
+(1)冗余分析(redundancy analysis,RDA)
+(2)典范对应分析(canonical correspondence analysis, CCA)
+
+
+                    </code></pre></p>
+                        </li>
+                        <br>
+                        <li>
+                            <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>③ 转录表达矩阵</strong></a>
+
+                        </li>
                     </h4>
                     <br>
                 </div>
                 <br>
                 </p>
 
-
-
                 <div id="basic-data-access-and-visualization" class="section level2">
                     <h1><span class="header-section-number">1</span> 相关性分析</h1>
-                    <p><pre class='r'><code># Functional analysis using a list of Ensembl gene ID via ClusterProfiler
-# What is correlation matrix?
+                    <p> <strong><i>软件安装</i></strong></p>
+                    <p><pre class='r'><code>
 
-# Correlation test is used to evaluate the association between two or more variables.
-# For instance, if we are interested to know whether there is a relationship between the heights of fathers and sons, 
-    a correlation coefficient can be calculated to answer this question.
-# If there is no relationship between the two variables (father and son heights), 
-    the average height of son should be the same regardless of the height of the fathers and vice versa.
-
-# Here, we’ll describe the different correlation methods and we’ll provide pratical examples using R software.
-
-# Install and load required R packages
-
-# We’ll use the ggpubr R package for an easy ggplot2-based data visualization
-
-# Install the latest version from GitHub as follow (recommended):
 if(!require(devtools)) install.packages("devtools")
 devtools::install_github("kassambara/ggpubr")
-# Or, install from CRAN as follow:
+# 或者
 install.packages("ggpubr")
-# Load ggpubr as follow:
+# 加载
 library("ggpubr")
 
-# Methods for correlation analyses
+# 公式：
+# x/y为长度n的向量，m_x/m_y对应均值
 
-# There are different methods to perform correlation analysis:
-# Pearson correlation (r), which measures a linear dependence between two variables (x and y). 
-# It’s also known as a parametric correlation test because it depends to the distribution of the data. 
-# It can be used only when x and y are from normal distribution. The plot of y = f(x) is named the linear regression curve.
-# Kendall tau and Spearman rho, which are rank-based correlation coefficients (non-parametric)
+# 皮尔森公式：
+sum{(x-m_x)(y-m_y)}}{sqrt{sum{(x-m_x)^2}\sum{(y-m_y)^2}}
 
-# The most commonly used method is the Pearson correlation method.
+# 斯皮尔曼
+sum(x - m_{x})(y_i - m_{y})}{sqrt{sum(x - m_{x})^2 \sum(y - m_{y})^2}} 
 
-# Correlation formula
+# 实战部分
 
-# In the formula below,
-# 
-# x and y are two vectors of length n
-# \(m_x\) and \(m_y\) corresponds to the means of x and y, respectively.
-# Pearson correlation formula
-
-# \[ r = \frac{\sum{(x-m_x)(y-m_y)}}{\sqrt{\sum{(x-m_x)^2}\sum{(y-m_y)^2}}} \]
-
-# \(m_x\) and \(m_y\) are the means of x and y variables.
-
-# The p-value (significance level) of the correlation can be determined :
-# by using the correlation coefficient table for the degrees of freedom : 
-# \(df = n-2\), where \(n\) is the number of observation in x and y variables.
-# or by calculating the t value as follow:
-
-# \[ t = \frac{r}{\sqrt{1-r^2}}\sqrt{n-2} \]
-
-# In the case 2) the corresponding p-value is determined using t distribution table for \(df = n-2\)
-# If the p-value is < 5%, then the correlation between x and y is significant.
-
-# Spearman correlation formula
-# The Spearman correlation method computes the correlation between the rank of x and the rank of y variables.
-
-# \[ rho = \frac{\sum(x' - m_{x'})(y'_i - m_{y'})}{\sqrt{\sum(x' - m_{x'})^2 \sum(y' - m_{y'})^2}} \]
-
-# Where \(x' = rank(x_)\) and \(y' = rank(y)\).
-
-# Kendall correlation formula
-
-# The Kendall correlation method measures the correspondence between the ranking of x and y variables. 
-# The total number of possible pairings of x with y observations is \(n(n-1)/2\), where n is the size of x and y.
-# The procedure is as follow:
-# Begin by ordering the pairs by the x values. If x and y are correlated, then they would have the same relative rank orders.
-# Now, for each \(y_i\), count the number of \(y_j > y_i\) (concordant pairs (c)) and the number of \(y_j < y_i\) (discordant pairs (d)).
-# Kendall correlation distance is defined as follow:
-
-# \[ tau = \frac{n_c - n_d}{\frac{1}{2}n(n-1)} \]
-
-# Where,
-# \(n_c\): total number of concordant pairs
-# \(n_d\): total number of discordant pairs
-# \(n\): size of x and y
-# Compute correlation in R
-# R functions
-# Correlation coefficient can be computed using the functions cor() or cor.test():
-
-
-# cor() computes the correlation coefficient
-# cor.test() test for association/correlation between paired samples. 
-#   It returns both the correlation coefficient and the significance level(or p-value) of the correlation .
-
-# The simplified formats are:
-
+# x, y: 等长度的向量
 cor(x, y, method = c("pearson", "kendall", "spearman"))
 cor.test(x, y, method=c("pearson", "kendall", "spearman"))
 
-# x, y: numeric vectors with the same length
-# method: correlation method
-
-
-# If your data contain missing values, use the following R code to handle missing values by case-wise deletion.
-
+# 若有缺失值则：
 cor(x, y,  method = "pearson", use = "complete.obs")
-# Import your data into R
 
-# Prepare your data as specified here: Best practices for preparing your data set for R
-# Save your data in an external .txt tab or .csv files
-# Import your data into R as follow:
-
-# If .txt tab file, use this
-my_data <- read.delim(file.choose())
-# Or, if .csv file, use this
-my_data <- read.csv(file.choose())
-# Here, we’ll use the built-in R data set mtcars as an example.
-
-# The R code below computes the correlation between mpg and wt variables in mtcars data set:
-
+==========================================================================
+# 案例：
 my_data <- mtcars
 head(my_data, 6)
+
 #                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
 # Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
 # Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
@@ -22473,254 +22431,60 @@ head(my_data, 6)
 # Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
 # Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
 # Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
-# We want to compute the correlation between mpg and wt variables.
 
-# Visualize your data using scatter plots
+#可视化
 
-# To use R base graphs, click this link: scatter plot - R base graphs. Here, we’ll use the ggpubr R package.
-
+# 先确定数据类型
 library("ggpubr")
 ggscatter(my_data, x = "mpg", y = "wt", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Miles/(US) gallon", ylab = "Weight (1000 lbs)")
-# Correlation Test Between Two Variables in R software
-# Preleminary test to check the test assumptions
 
-# Is the covariation linear? Yes, form the plot above, the relationship is linear. In the situation where the scatter plots show curved patterns, we are dealing with nonlinear association between the two variables.
+# Q-Q 图 用于确定定样本和正态分布之间的相关性
 
-# Are the data from each of the 2 variables (x, y) follow a normal distribution?
-# Use Shapiro-Wilk normality test –> R function: shapiro.test()
-# and look at the normality plot —> R function: ggpubr::ggqqplot()
-# Shapiro-Wilk test can be performed as follow:
-# Null hypothesis: the data are normally distributed
-# Alternative hypothesis: the data are not normally distributed
-# Shapiro-Wilk normality test for mpg
-shapiro.test(my_data$mpg) # => p = 0.1229
-# Shapiro-Wilk normality test for wt
-shapiro.test(my_data$wt) # => p = 0.09
-# From the output, the two p-values are greater than the significance level 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
-
-# Visual inspection of the data normality using Q-Q plots (quantile-quantile plots). Q-Q plot draws the correlation between a given sample and the normal distribution.
-library("ggpubr")
-# mpg
 ggqqplot(my_data$mpg, ylab = "MPG")
-# wt
-ggqqplot(my_data$wt, ylab = "WT")
-# Correlation Test Between Two Variables in R softwareCorrelation Test Between Two Variables in R software
-# From the normality plots, we conclude that both populations may come from normal distributions.
-
-# Note that, if the data are not normally distributed, it’s recommended to use the non-parametric correlation, including Spearman and Kendall rank-based correlation tests.
-
-# Pearson correlation test
-
-# Correlation test between mpg and wt variables:
 
 res <- cor.test(my_data$wt, my_data$mpg, 
                     method = "pearson")
 res
-
-#     Pearson's product-moment correlation
-# data:  my_data$wt and my_data$mpg
-# t = -9.559, df = 30, p-value = 1.294e-10
-# alternative hypothesis: true correlation is not equal to 0
-# 95 percent confidence interval:
-#  -0.9338264 -0.7440872
-# sample estimates:
-#        cor 
-# -0.8676594 
-
-# In the result above :
-
-# t is the t-test statistic value (t = -9.559),
-# df is the degrees of freedom (df= 30),
-# p-value is the significance level of the t-test (p-value = 1.29410^{-10}).
-# conf.int is the confidence interval of the correlation coefficient at 95% (conf.int = [-0.9338, -0.7441]);
-# sample estimates is the correlation coefficient (Cor.coeff = -0.87).
-
-
-# Interpretation of the result
-# The p-value of the test is 1.29410^{-10}, which is less than the significance level alpha = 0.05.
-# We can conclude that wt and mpg are significantly correlated with a correlation coefficient of -0.87 and p-value of 1.29410^{-10} .
-# Access to the values returned by cor.test() function
-
-# The function cor.test() returns a list containing the following components:
-
-# p.value: the p-value of the test
-# estimate: the correlation coefficient
-# Extract the p.value
+# 查看 p.value
 res$p.value
-# [1] 1.293959e-10
-# Extract the correlation coefficient
+
+# 查看 r 值
 res$estimate
-#        cor 
-# -0.8676594 
 
-
-# Kendall rank correlation test
-
-# The Kendall rank correlation coefficient or Kendall’s tau statistic is used to estimate a rank-based measure of association. This test may be used if the data do not necessarily come from a bivariate normal distribution.
-
-res2 <- cor.test(my_data$wt, my_data$mpg,  method="kendall")
-res2
-
-#     Kendall's rank correlation tau
-# data:  my_data$wt and my_data$mpg
-# z = -5.7981, p-value = 6.706e-09
-# alternative hypothesis: true tau is not equal to 0
-# sample estimates:
-#        tau 
-# -0.7278321 
-# tau is the Kendall correlation coefficient.
-
-# The correlation coefficient between x and y are -0.7278 and the p-value is 6.70610^{-9}.
-
-
-# Spearman rank correlation coefficient
-
-# Spearman’s rho statistic is also used to estimate a rank-based measure of association. This test may be used if the data do not come from a bivariate normal distribution.
-
+# Spearman
 res2 <-cor.test(my_data$wt, my_data$mpg,  method = "spearman")
 res2
 
-#     Spearman's rank correlation rho
-# data:  my_data$wt and my_data$mpg
-# S = 10292, p-value = 1.488e-11
-# alternative hypothesis: true rho is not equal to 0
-# sample estimates:
-#       rho 
-# -0.886422 
-# rho is the Spearman’s correlation coefficient.
+# Kendall
+res2 <- cor.test(my_data$wt, my_data$mpg,  method="kendall")
+res2
 
-# The correlation coefficient between x and y are -0.8864 and the p-value is 1.48810^{-11}.
+==========================================================================
 
-# Interpret correlation coefficient
+# Hmisc包使用
 
-# Correlation coefficient is comprised between -1 and 1:
-
-
-# -1 indicates a strong negative correlation : this means that every time x increases, y decreases (left panel figure)
-# 0 means that there is no association between the two variables (x and y) (middle panel figure)
-# 1 indicates a strong positive correlation : this means that y increases with x (right panel figure)
-# Correlation Test Between Two Variables in R softwareCorrelation Test Between Two Variables in R softwareCorrelation Test Between Two Variables in R software
-
-
-# There are different methods for correlation analysis : Pearson parametric correlation test, Spearman and Kendall rank-based correlation analysis. These methods are discussed in the next sections.
-
-# The aim of this R tutorial is to show you how to compute and visualize a correlation matrix in R. We provide also an online software for computing and visualizing a correlation matrix.
-# Compute correlation matrix in R
-
-cor(x, method = c("pearson", "kendall", "spearman"))
-
-# x: numeric matrix or a data frame.
-# method: indicates the correlation coefficient to be computed. The default is pearson correlation coefficient which measures the linear dependence between two variables. kendall and spearman correlation methods are non-parametric rank-based correlation test.
-
-
-# If your data contain missing values, use the following R code to handle missing values by case-wise deletion.
-
-cor(x, method = "pearson", use = "complete.obs")
-Import your data into R
-
-# Prepare your data as specified here: Best practices for preparing your data set for R
-
-# Save your data in an external .txt tab or .csv files
-
-# Import your data into R as follow:
-
-# If .txt tab file, use this
-my_data <- read.delim(file.choose())
-# Or, if .csv file, use this
-my_data <- read.csv(file.choose())
-Here, we’ll use a data derived from the built-in R data set mtcars as an example:
-
-# Load data
-data("mtcars")
-my_data <- mtcars[, c(1,3,4,5,6,7)]
-# print the first 6 rows
-head(my_data, 6)
-#                    mpg disp  hp drat    wt  qsec
-# Mazda RX4         21.0  160 110 3.90 2.620 16.46
-# Mazda RX4 Wag     21.0  160 110 3.90 2.875 17.02
-# Datsun 710        22.8  108  93 3.85 2.320 18.61
-# Hornet 4 Drive    21.4  258 110 3.08 3.215 19.44
-# Hornet Sportabout 18.7  360 175 3.15 3.440 17.02
-# Valiant           18.1  225 105 2.76 3.460 20.22
-
-
-# Compute correlation matrix
-
-res <- cor(my_data)
-round(res, 2)
-#        mpg  disp    hp  drat    wt  qsec
-# mpg   1.00 -0.85 -0.78  0.68 -0.87  0.42
-# disp -0.85  1.00  0.79 -0.71  0.89 -0.43
-# hp   -0.78  0.79  1.00 -0.45  0.66 -0.71
-# drat  0.68 -0.71 -0.45  1.00 -0.71  0.09
-# wt   -0.87  0.89  0.66 -0.71  1.00 -0.17
-# qsec  0.42 -0.43 -0.71  0.09 -0.17  1.00
-
-# In the table above correlations coefficients between the possible pairs of variables are shown.
-
-# Note that, if your data contain missing values, use the following R code to handle missing values by case-wise deletion.
-
-cor(my_data, use = "complete.obs")
-Unfortunately, the function cor() returns only the correlation coefficients between variables. In the next section, we will use Hmisc R package to calculate the correlation p-values.
-
-# Correlation matrix with significance levels (p-value)
-
-# The function rcorr() [in Hmisc package] can be used to compute the significance levels for pearson and spearman correlations. It returns both the correlation coefficients and the p-value of the correlation for all possible pairs of columns in the data table.
-
-# Simplified format:
-rcorr(x, type = c("pearson","spearman"))
-x should be a matrix. The correlation type can be either pearson or spearman.
-
-# Install Hmisc package:
 install.packages("Hmisc")
-# Use rcorr() function
 library("Hmisc")
+
+# x 为matrix，方法选一个即可
+rcorr(x, type = c("pearson","spearman"))
+
 res2 <- rcorr(as.matrix(my_data))
 res2
-#        mpg  disp    hp  drat    wt  qsec
-# mpg   1.00 -0.85 -0.78  0.68 -0.87  0.42
-# disp -0.85  1.00  0.79 -0.71  0.89 -0.43
-# hp   -0.78  0.79  1.00 -0.45  0.66 -0.71
-# drat  0.68 -0.71 -0.45  1.00 -0.71  0.09
-# wt   -0.87  0.89  0.66 -0.71  1.00 -0.17
-# qsec  0.42 -0.43 -0.71  0.09 -0.17  1.00
-# n= 32 
 
-#P
-#     mpg    disp   hp     drat   wt     qsec  
-#mpg         0.0000 0.0000 0.0000 0.0000 0.0171
-#disp 0.0000        0.0000 0.0000 0.0000 0.0131
-#hp   0.0000 0.0000        0.0100 0.0000 0.0000
-#drat 0.0000 0.0000 0.0100        0.0000 0.6196
-#wt   0.0000 0.0000 0.0000 0.0000        0.3389
-#qsec 0.0171 0.0131 0.0000 0.6196 0.3389   
-
-# The output of the function rcorr() is a list containing the following elements : - r : the correlation matrix - n : the matrix of the number of observations used in analyzing each pair of variables - P : the p-values corresponding to the significance levels of correlations.
-
-# If you want to extract the p-values or the correlation coefficients from the output, use this:
-
-# Extract the correlation coefficients
 res2$r
-# Extract p-values
-res2$P
-#A simple function to format the correlation matrix
 
-# This section provides a simple function for formatting a correlation matrix into a table with 4 columns containing :
+res2$P
 
 # Column 1 : row names (variable 1 for the correlation test)
 # Column 2 : column names (variable 2 for the correlation test)
 # Column 3 : the correlation coefficients
 # Column 4 : the p-values of the correlations
-# The custom function below can be used :
 
-# ++++++++++++++++++++++++++++
-# flattenCorrMatrix
-# ++++++++++++++++++++++++++++
-# cormat : matrix of the correlation coefficients
-# pmat : matrix of the correlation p-values
+# 写一个函数
 flattenCorrMatrix <- function(cormat, pmat) {
   ut <- upper.tri(cormat)
   data.frame(
@@ -22730,8 +22494,8 @@ flattenCorrMatrix <- function(cormat, pmat) {
     p = pmat[ut]
     )
 }
-Example of usage :
 
+# Example of usage :
 library(Hmisc)
 res2<-rcorr(as.matrix(mtcars[,1:7]))
 flattenCorrMatrix(res2$r, res2$P)
@@ -22758,109 +22522,34 @@ flattenCorrMatrix(res2$r, res2$P)
 # 20 drat   qsec  0.09120482 6.195823e-01
 # 21   wt   qsec -0.17471591 3.388682e-01
 
-# Visualize correlation matrix
-
-# There are different ways for visualizing a correlation matrix in R software :
-
-# symnum() function
-# corrplot() function to plot a correlogram
-# scatter plots
-# heatmap
-# Use symnum() function: Symbolic number coding
-
-# The R function symnum() replaces correlation coefficients by symbols according to the level of the correlation. It takes the correlation matrix as an argument :
-
-# Simplified format:
+# 将显著性数值转化为图形:
 symnum(x, cutpoints = c(0.3, 0.6, 0.8, 0.9, 0.95),
        symbols = c(" ", ".", ",", "+", "*", "B"),
        abbr.colnames = TRUE)
 
-# x: the correlation matrix to visualize
-# cutpoints: correlation coefficient cutpoints. The correlation coefficients between 0 and 0.3 are replaced by a space (" “); correlation coefficients between 0.3 and 0.6 are replace by”.“; etc …
-# symbols : the symbols to use.
-# abbr.colnames: logical value. If TRUE, colnames are abbreviated.
-
-
-# Example of usage:
 symnum(res, abbr.colnames = FALSE)
-#      mpg disp hp drat wt qsec
-# mpg  1                       
-# disp +   1                   
-# hp   ,   ,    1              
-# drat ,   ,    .  1           
-# wt   +   +    ,  ,    1      
-# qsec .   .    ,          1   
-# attr(,"legend")
-# [1] 0 ' ' 0.3 '.' 0.6 ',' 0.8 '+' 0.9 '*' 0.95 'B' 1
-# As indicated in the legend, the correlation coefficients between 0 and 0.3 are replaced by a space (" “); correlation coefficients between 0.3 and 0.6 are replace by”.“; etc …
 
-# Use corrplot() function: Draw a correlogram
-
-# The function corrplot(), in the package of the same name, creates a graphical display of a correlation matrix, highlighting the most correlated variables in a data table.
-
-# In this plot, correlation coefficients are colored according to the value. Correlation matrix can be also reordered according to the degree of association between variables.
-
-# Install corrplot:
+# 可视化
 install.packages("corrplot")
-# Use corrplot() to create a correlogram:
-# The function corrplot() takes the correlation matrix as the first argument. The second argument (type=“upper”) is used to display only the upper triangular of the correlation matrix.
-
 library(corrplot)
 corrplot(res, type = "upper", order = "hclust", 
          tl.col = "black", tl.srt = 45)
-# Correlation matrix - R software and statistics
-# Positive correlations are displayed in blue and negative correlations in red color. Color intensity and the size of the circle are proportional to the correlation coefficients. In the right side of the correlogram, the legend color shows the correlation coefficients and the corresponding colors.
-
-
-# The correlation matrix is reordered according to the correlation coefficient using “hclust” method.
-# tl.col (for text label color) and tl.srt (for text label string rotation) are used to change text colors and rotations.
-# Possible values for the argument type are : “upper”, “lower”, “full”
-
-# Read more : visualize a correlation matrix using corrplot.
-
-It’s also possible to combine correlogram with the significance test. We’ll use the result res.cor2 generated in the previous section with rcorr() function [in Hmisc package]:
 
 # Insignificant correlation are crossed
 corrplot(res2$r, type="upper", order="hclust", 
          p.mat = res2$P, sig.level = 0.01, insig = "blank")
+
 # Insignificant correlations are leaved blank
 corrplot(res2$r, type="upper", order="hclust", 
          p.mat = res2$P, sig.level = 0.01, insig = "blank")
-# Correlation matrix - R software and statistics
-# In the above plot, correlations with p-value > 0.01 are considered as insignificant. In this case the correlation coefficient values are leaved blank or crosses are added.
 
-# Use chart.Correlation(): Draw scatter plots
-
-# The function chart.Correlation()[ in the package PerformanceAnalytics], can be used to display a chart of a correlation matrix.
-
-Install PerformanceAnalytics:
 install.packages("PerformanceAnalytics")
-Use chart.Correlation():
 library("PerformanceAnalytics")
 my_data <- mtcars[, c(1,3,4,5,6,7)]
-chart.Correlation(my_data, histogram=TRUE, pch=19)
 # scatter plot, chart
-
-In the above plot:
-
-# The distribution of each variable is shown on the diagonal.
-# On the bottom of the diagonal : the bivariate scatter plots with a fitted line are displayed
-# On the top of the diagonal : the value of the correlation plus the significance level as stars
-# Each significance level is associated to a symbol : p-values(0, 0.001, 0.01, 0.05, 0.1, 1) <=> symbols(“***”, “**”, “*”, “.”, " “)
-
-
-Use heatmap()
-
 # Get some colors
 col<- colorRampPalette(c("blue", "white", "red"))(20)
 heatmap(x = res, col = col, symm = TRUE)
-# Heatmap of correlation matrix
-
-# x : the correlation matrix to be plotted
-# col : color palettes
-# symm : logical indicating if x should be treated symmetrically; can only be true when x is a square matrix.
-
-
 
                     </code></pre></p>
                 </div>
@@ -22869,17 +22558,64 @@ heatmap(x = res, col = col, symm = TRUE)
 
                 <div id="basic-data-access-and-visualization" class="section level2">
                     <h1><span class="header-section-number">2</span> 降维</h1>
-                    <p><pre class='r'><code># Functional analysis using a list of Ensembl gene ID via ClusterProfiler
+                    <p><pre class='r'><code>
 
-1、只使用物种组成数据的排序称作非限制性排序(unconstrained ordination)
-(1)主成分分析(principal components analysis,PCA)
-(2)对应分析(correspondence analysis, CA)
-(3)去趋势对应分析(Detrended correspondence analysis, DCA)
-(3)主坐标分析(principal coordinate analysis, PCoA)
-(4)非度量多维尺度分析(non-metric multi-dimensional scaling, NMDS)
-2、同时使用物种和环境因子组成数据的排序叫作限制性排序(constrained ordination)
-(1)冗余分析(redundancy analysis,RDA)
-(2)典范对应分析(canonical correspondence analysis, CCA)
+install.packages("devtools", repo="http://cran.us.r-project.org")
+library(devtools)
+install_github("vqv/ggbiplot")
+
+library(ggplot2)
+library(plyr)
+library(scales)
+library(grid)
+library(ggbiplot)
+
+PCA1 <- read.csv("C:/Users/Administrator/Desktop/PCA1.csv")
+View(PCA1)
+data <- PCA1
+pca <- prcomp(data[,2:9], scale. = TRUE)
+ggbiplot(pca, obs.scale = 1, var.scale = 1, groups = data$station)
+
+====================================================================
+library(vegan)
+library(ggplot2)
+library(ggrepel)
+library(ggsci)
+Mycolor = c("#E64B35B2","#4DBBD5B2","#00A087B2","#3C5488B2","#F39B7FB2","#8491B4B2","#91D1C2B2","#DC0000B2","#7E6148B2")
+
+otu_table <- otu_table[which(rowSums(otu_table) > 10),]
+otu_hel <- decostand(otu_table, method = 'hellinger')
+pca_sp2 <- rda(otu_hel, scale = FALSE)
+pca_exp2 <- pca_sp2$CA$eig / sum(pca_sp2$CA$eig)
+pc1_sp2 <- paste0('PC1(', round(pca_exp2[1]*100, 2), '%)')
+pc2_sp2 <- paste0('PC2(',round(pca_exp2[2]*100, 2), '%)')
+ 
+ggplot()+geom_point(data= as.data.frame(pca$rotation),aes(x=PC1,y=PC2,color=sample_metadata$Grouping_1))+
+theme_bw()+geom_hline(yintercept=0,linetype=3,size=1,color='grey')+
+geom_vline(xintercept=0,linetype=3,size=1,color='grey')+
+labs(x=pc1_sp2,y=pc2_sp2)+scale_color_npg()
+
+
+#dd=rda(log10(otu_table))###此处对物种数据取对数作转化，可根据自己数据选择合适的转化方法
+oo=summary(dd) %>% as.data.frame()
+site=as.data.frame(oo$sites)###提取样方坐标
+spp=as.data.frame(oo$species)###提取物种坐标
+grp=as.data.frame(c(rep("a",4),rep("b",4),rep("c",4),rep("d",4)))###根据样方类型分组
+colnames(grp)="group"
+###以下开始作图
+ggplot()+
+  geom_point(data=site,aes(x=PC1,y=PC2,shape=grp$group,fill=grp$group),size=4)+
+  scale_shape_manual(values = c(21:24))+
+    geom_segment(data=spp,aes(x=0,y=0,xend=PC1,yend=PC2),
+               arrow = arrow(angle = 22.5,length = unit(0.35,"cm"),
+                             type="closed"),linetype=1,size=1,color="red")+
+  geom_text_repel(data=spp,aes(x=PC1,y=PC2),label=row.names(spp))+
+  geom_hline(yintercept=0,linetype=3,size=1)+ 
+  geom_vline(xintercept=0,linetype=3,size=1)+
+  labs(x=paste("PC1(", format(100 *oo$cont[[1]][2,1], digits=4), "%)", sep=""),
+       y=paste("PC2(", format(100 *oo$cont[[1]][2,2], digits=4), "%)", sep=""))+
+  guides(shape=guide_legend(title = NULL),fill=guide_legend(title = NULL))+
+  theme_bw()+theme(panel.grid = element_blank())
 
 
                     </code></pre></p>
