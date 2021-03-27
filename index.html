@@ -22324,10 +22324,8 @@
                     <h1 class="title toc-ignore">RNAseq 通路富集可视化绘图基础</h1>
                     <p class="author-name">Feng jiarong<span class="affil-mark"> 1</span></p>
                     <p class="author-affiliation"><span class="affil-mark"></span><i></i></p>
-                    <h4 class="date"><i>BGI Genomics Co Ltd, ShenZhen, 2021.03.24</i></h4>
+                    <h4 class="date"><i>ShenZhen, 2021.03.28</i></h4>
                     <hr>
-                    <p style="text-indent:2em">感谢大家来到本次 <i>RNAseq 通路富集可视化绘图基础</i> 分享课堂，本次课堂意在分享关于转录组的一些分析经验。
-                    </p>
                     <p style="text-indent:2em">首先，我们需要下载一些软件和数据： </p>
                     <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank">
                         <p><strong><i>https://github.com/Fanjaro/RNAseq-Vis-Workshop</i></strong>
@@ -22337,7 +22335,8 @@
                     <a href="http://www.cookbook-r.com" target="_blank">
                         <p><strong><i>http://www.cookbook-r.com</i></strong>
                     </a>
-
+                    <p style="text-indent:2em">《《R语言核心手册》》</p>
+                    <p style="text-indent:2em">《《ggplot2》》</p>
                     </p>
                 </div>
 
@@ -22370,10 +22369,34 @@
                     <li style="text-indent:2em">标准化</li>
                     <p><pre class='r'><code>
 标准化：
-常见标准化：log10转化，Z-score标准化，hellinger
-比对定量：rpkm/fpkm/tpm
-转换距离矩阵：bray-curtis/unifrac
 
+（1）改变变量或对象的相对权重（重要性），消除这种由相对权重所造成的差异。
+（2）当变量具有不同的量纲时，标准化过程可以使不同物理单位的变量具有可比性。
+（3）缩小变量间的差异，降低极端值的影响，或者限制数据的取值范围（如[0,1]区间）等。
+
+# 最简单的方法：
+中心化：数据-均值
+标准化：(数据-均值）/标准差
+数据中心化：  scale(data,center=T,scale=F) 
+数据标准化：  scale(data,center=T,scale=T) 或默认参数scale(data)
+
+dat <- log(data+1, 2)	    #log2
+dat <- log(data+1, exp(1))  #ln
+dat <- log(data+1, 10)	    #log10
+dat <- data^2	            #平方
+
+# 进阶
+# 能提供所有常见的标准化方法，具体请看??vegan::decostand
+dat2 <- decostand(dat, method = 'pa')	#二元 0-1 转化
+dat2 <- decostand(dat, method = 'normalize')	#转化后平方和为 1
+dat2 <- decostand(dat, method = 'hellinger')	#Hellinger 转化
+dat2 <- decostand(dat, method = 'chi.square')	#卡方转化
+
+#其他：
+# 大数定理说的是均值，摇骰子，摇100万次，均值趋近3.5；
+# 中心极限定理说的是分布，每次4颗骰子一起扔，每次都记下4颗的均值，扔100万次，这些均值服从正态分布
+
+# 批次效应移除：sva::ComBat_seq()
 </code></pre></p>
 
                     <br>
@@ -22382,8 +22405,10 @@
                         <li>
 
                             <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>① 相关性检验</strong></a>
-                            <p style="text-indent:1em">1. 检验方法总览 (数据分布/中心极限定理/大数定律)</p>
-                            <p><img src="statistics.png"></p>
+                            <p style="text-indent:1em"><a href="statistics2.png" target="_blank">1. 检验方法总览 (数据分布/中心极限定理)</a></p>
+                            <p>
+                                </a><img src="statistics2.png">
+                            </p>
                             <br>
                             <p style="text-indent:1em">2. 相关检验用于评估两个或多个变量之间的关联性。相关检验方法常见有三种(连续变量):
                                 <li style="text-indent:1em">Pearson correlation(皮尔森相关性,参数)</li>
@@ -22410,8 +22435,8 @@
 (3)主坐标分析(principal coordinate analysis, PCoA)
 (4)非度量多维尺度分析(non-metric multi-dimensional scaling, NMDS)
 
-(5)Tsne
-(6)Umap
+(5)<a href="tSNE_3D_clusters.html" target="_blank">Tsne</a>
+(6)<a href="umap_3D.html" target="_blank">Umap</a>
 ------------------------------------------------------------
 2、(结合因子)限制性排序(constrained ordination)
 (1)冗余分析(redundancy analysis,RDA)
@@ -22471,22 +22496,12 @@ ggscatter(my_data, x = "mpg", y = "wt",
 
 # Q-Q 图 用于确定定样本和正态分布之间的相关性
 ggqqplot(my_data$mpg, ylab = "MPG")
-
+＃　多数点接近直线，所以认为数据为正态分布数据。
+shapiro.test(my_data$mpg)
+＃原假设数据服从正态分布，当伴随概率P值大于0.05时，认为数据服从正态分布。
 # 皮尔森
 res <- cor.test(my_data$wt, my_data$mpg, 
                     method = "pearson")
-res
-
-
-#Pearson's product-moment correlation
-# data:  my_data$wt and my_data$mpg
-# t = -9.559, df = 30, p-value = 1.294e-10
-# alternative hypothesis: true correlation is not equal to 0
-# 95 percent confidence interval:
-# -0.9338264 -0.7440872
-# sample estimates:
-#       cor
-# -0.8676594
 
 # 查看 p.value
 res$p.value
@@ -22507,7 +22522,7 @@ library("Hmisc")
 
 # 看下用法
 # help(rcorr)
-rcorr(x, type = c("pearson","spearman"))
+＃　rcorr(x, type = c("pearson","spearman"))
 
 res2 <- rcorr(as.matrix(my_data))
 res2
@@ -22515,7 +22530,7 @@ res2
 res2$r
 res2$P
 
-# 写一个函数
+# 写一个函数提取r & p 
 flattenCorrMatrix <- function(cormat, pmat) {
   ut <- upper.tri(cormat)
   data.frame(
@@ -22528,34 +22543,58 @@ flattenCorrMatrix <- function(cormat, pmat) {
 
 # 案例 :
 library(Hmisc)
-res2<-rcorr(as.matrix(mtcars[,1:7]))
-flattenCorrMatrix(res2$r, res2$P)
+res2 <-rcorr(as.matrix(mtcars[,1:7]))
+res3 <-flattenCorrMatrix(res2$r, res2$P)
+==========================================================================
+# install.packages(c('ggnewscale', 'patchwork'))
+# install.packages("ggcor-1-master/",repo=NULL,type = "source")
+devtools::install_github("houyunhuang/ggcor")
+library(dplyr)
+library(ggcor)
+#> Warning: package 'dplyr' was built under R version 3.6.2
+data("varechem", package = "vegan")
+data("varespec", package = "vegan")
 
-# 将显著性数值转化为图形:
-symnum(x, cutpoints = c(0.3, 0.6, 0.8, 0.9, 0.95),
-       symbols = c(" ", ".", ",", "+", "*", "B"),
-       abbr.colnames = TRUE)
+mantel <- mantel_test(varespec, varechem,
+                      spec.select = list(Spec01 = 1:7,
+                                         Spec02 = 8:18,
+                                         Spec03 = 19:37,
+                                         Spec04 = 38:44)) %>% 
+  mutate(rd = cut(r, breaks = c(-Inf, 0.2, 0.4, Inf),
+                  labels = c("< 0.2", "0.2 - 0.4", ">= 0.4")),
+         pd = cut(p.value, breaks = c(-Inf, 0.01, 0.05, Inf),
+                  labels = c("< 0.01", "0.01 - 0.05", ">= 0.05")))
 
-symnum(res, abbr.colnames = FALSE)
+quickcor(varechem, type = "upper") +
+  geom_square() +
+  anno_link(aes(colour = pd, size = rd), data = mantel) +
+  scale_size_manual(values = c(0.5, 1, 2)) +
+  scale_colour_manual(values = c("#D95F02", "#1B9E77", "#A2A2A288")) +
+  guides(size = guide_legend(title = "Mantel's r",
+                             override.aes = list(colour = "grey35"), 
+                             order = 2),
+         colour = guide_legend(title = "Mantel's p", 
+                               override.aes = list(size = 3), 
+                               order = 1),
+         fill = guide_colorbar(title = "Pearson's r", order = 3))
 
-# 可视化
-install.packages("corrplot")
-library(corrplot)
-corrplot(res, type = "upper", order = "hclust", 
-         tl.col = "black", tl.srt = 45)
+rand_correlate(100, 8) %>% ## require ambient packages
+  quickcor(circular = TRUE, cluster = TRUE, open = 45) +
+  geom_colour(colour = "white", size = 0.125) +
+  anno_row_tree() +
+  anno_col_tree() +
+  set_p_xaxis() +
+  set_p_yaxis()
 
-# Insignificant correlations are leaved blank
-corrplot(res2$r, type="upper", order="hclust", 
-         p.mat = res2$P, sig.level = 0.01, insig = "blank")
+BiocManager::install("ambient")
+rand_correlate(100, 8) %>% ## require ambient packages
+  quickcor(circular = TRUE, cluster = TRUE, open = 45) +
+  geom_colour(colour = "white", size = 0.125) +
+  anno_row_tree() +
+  anno_col_tree() +
+  set_p_xaxis() +
+  set_p_yaxis()
 
-=====================================================================
-install.packages("PerformanceAnalytics")
-library("PerformanceAnalytics")
-my_data <- mtcars[, c(1,3,4,5,6,7)]
-# scatter plot, chart
-# Get some colors
-col<- colorRampPalette(c("blue", "white", "red"))(20)
-heatmap(x = res, col = col, symm = TRUE)
 
                     </code></pre></p>
                 </div>
@@ -22566,63 +22605,226 @@ heatmap(x = res, col = col, symm = TRUE)
                     <h1><span class="header-section-number">2</span> 降维</h1>
                     <p><pre class='r'><code>
 
-install.packages("devtools", repo="http://cran.us.r-project.org")
-library(devtools)
-install_github("vqv/ggbiplot")
-library(ggplot2)
-library(plyr)
-library(scales)
-library(grid)
-library(ggbiplot)
+#Some multivariate methods compiled by Helena
 
-PCA1 <- read.csv("PCA1.csv")
-View(PCA1)
-data <- PCA1
-pca <- prcomp(data[,2:9], scale. = TRUE)
-ggbiplot(pca, obs.scale = 1, var.scale = 1, groups = data$station)
+rm(list=ls(all=TRUE)) #clear environment
 
-====================================================================
+## load libraries ##
 library(vegan)
-library(ggplot2)
-library(ggrepel)
-library(ggsci)
-Mycolor = c("#E64B35B2","#4DBBD5B2","#00A087B2","#3C5488B2","#F39B7FB2","#8491B4B2","#91D1C2B2","#DC0000B2","#7E6148B2")
 
-otu_table <- otu_table[which(rowSums(otu_table) > 10),]
-otu_hel <- decostand(otu_table, method = 'hellinger')
-pca_sp2 <- rda(otu_hel, scale = FALSE)
-pca_exp2 <- pca_sp2$CA$eig / sum(pca_sp2$CA$eig)
-pc1_sp2 <- paste0('PC1(', round(pca_exp2[1]*100, 2), '%)')
-pc2_sp2 <- paste0('PC2(',round(pca_exp2[2]*100, 2), '%)')
- 
-ggplot()+geom_point(data= as.data.frame(pca$rotation),aes(x=PC1,y=PC2,color=sample_metadata$Grouping_1))+
-theme_bw()+geom_hline(yintercept=0,linetype=3,size=1,color='grey')+
-geom_vline(xintercept=0,linetype=3,size=1,color='grey')+
-labs(x=pc1_sp2,y=pc2_sp2)+scale_color_npg()
+## load data ##
+setwd("6-Multivar-Stats-Helena")
+DOM <- as.data.frame(read.csv("HE361-DOM-shorter.csv", sep=",", row.names=1))
+ENVR <- as.data.frame(t(read.csv("HE361-ENVR-short.csv", sep=",", row.names=1)))
+ENVR.short <- cbind(ENVR$Temp, ENVR$Sal, ENVR$chla, ENVR$TDN.uM)
+rownames(ENVR.short) <- rownames(ENVR); colnames(ENVR.short) <- c("Temp", "Sal", "chla", "TDN")
+ENVR.short <- as.data.frame(ENVR.short)
 
-#dd=rda(log10(otu_table))###此处对物种数据取对数作转化，可根据自己数据选择合适的转化方法
-oo=summary(dd) %>% as.data.frame()
-site=as.data.frame(oo$sites)###提取样方坐标
-spp=as.data.frame(oo$species)###提取物种坐标
-grp=as.data.frame(c(rep("a",4),rep("b",4),rep("c",4),rep("d",4)))###根据样方类型分组
-colnames(grp)="group"
-###以下开始作图
-ggplot()+
-  geom_point(data=site,aes(x=PC1,y=PC2,shape=grp$group,fill=grp$group),size=4)+
-  scale_shape_manual(values = c(21:24))+
-    geom_segment(data=spp,aes(x=0,y=0,xend=PC1,yend=PC2),
-               arrow = arrow(angle = 22.5,length = unit(0.35,"cm"),
-                             type="closed"),linetype=1,size=1,color="red")+
-  geom_text_repel(data=spp,aes(x=PC1,y=PC2),label=row.names(spp))+
-  geom_hline(yintercept=0,linetype=3,size=1)+ 
-  geom_vline(xintercept=0,linetype=3,size=1)+
-  labs(x=paste("PC1(", format(100 *oo$cont[[1]][2,1], digits=4), "%)", sep=""),
-       y=paste("PC2(", format(100 *oo$cont[[1]][2,2], digits=4), "%)", sep=""))+
-  guides(shape=guide_legend(title = NULL),fill=guide_legend(title = NULL))+
-  theme_bw()+theme(panel.grid = element_blank())
-                    </code></pre></p>
+## plots to familiarize yourself with the data ##
+plot(ENVR$Sal, ENVR$DOC.uM, cex=2, pch=21)
+plot(ENVR$chla, ENVR$Temp, cex=2, pch=21)
+cor.test(ENVR$Sal, ENVR$DOC.uM, method="pearson")
+hist(DOM$X1_3m)
+plot(DOM$X1_3m, type="l")
+
+
+#corrplot to investigate correlations between environmental variables
+library(corrplot)
+col1 <- colorRampPalette(c("green4","white","dodgerblue3"))
+envr.pearson <- cor(ENVR, use= "complete.obs", method="pearson")
+corrplot(envr.pearson, type="full", order ="hclust", addrect=4, title="Pearson Correlation", 
+         method="square", col=col1(20))
+corrplot(envr.pearson, type="upper", order ="hclust", title="Spearman Correlation", 
+         sig.level=0.001, insig="blank")
+
+## normalize/standardize data ##
+dom <- decostand(DOM, method="total", MARGIN = 2); colSums(dom)
+dom.hell <- decostand(dom, method="hellinger"); colSums(dom.hell)
+envr <- decostand(ENVR, method="normalize", MARGIN = 2)
+envr.short <- decostand(ENVR.short, method="normalize", MARGIN = 2)
+#envr <-as.data.frame(scale(ENVR, center = T, scale=T))
+
+#test for normal distribution
+hist(rnorm(1000, mean = 5, sd = 3))
+shapiro.test(rnorm(1000, mean = 5, sd = 3)) #if p>0.05 -> normal distribution
+hist(envr$Sal, breaks=25)
+shapiro.test(envr$Sal) #if p<0.05 -> no normal distribution
+
+## cluster analysis ##
+#hclust
+dom.dist <- vegdist(t(dom.hell), method="bray")
+dom.clust.complete <- hclust(dom.dist, method="complete")
+plot(dom.clust.complete)
+dom.clust.average <- hclust(dom.dist, method="average") #=UPGMA
+plot(dom.clust.average)
+clusters <- cutree(dom.clust.complete, k=3)
+dom.clust.complete$order
+#bootstrap
+library(fpc)
+boot <- clusterboot(dom.dist, B=200, distances=T, clustermethod=hclustCBI, 
+                    method="complete", k=3)
+boot$bootmean #values close to 1 indicate stable clusters
+boot$bootrecover
+#kmeans
+dom.kmeans <- kmeans(t(dom), centers=3)
+dom.kmeans$cluster
+#plotcluster(t(dom), dom.kmeans$cluster) #discriminant projection plot
+
+## NMDS ##
+#just in case you come across isoMDS: meta and iso are basically the same functions (metaMDS
+# (of vegan) uses isoMDS (of MASS), only meta provides some additional possibilities)
+dom.nmds <- metaMDS(dom.dist, distance="bray", k=3, try=20)
+dom.nmds$stress #stress <0.05 good fit, <0.1 fair, <0.2 suspect, <0.3 arbitrary
+my.color.ramp.fct<-colorRamp(c("red","snow","dodgerblue3"))
+as.rgb.channels<-my.color.ramp.fct(decostand(ENVR$Sal,method="range"))
+lat.color<-rgb(as.rgb.channels,maxColorValue=255)
+plot(dom.nmds$points[,1], dom.nmds$points[,2], cex=2, pch=21, bg=lat.color)
+
+#varimax rotation
+nmds.varimax <- varimax(dom.nmds$points, normalize=T)
+plot(nmds.varimax$loadings[,1], nmds.varimax$loadings[,2], cex=2, pch=21, bg=lat.color)
+
+## PCA ##
+#other functions: vegan's rda() without a matrix of explanatory variables is PCA,
+#pca() from labdsv, princomp (more samples than variables)
+dom.pca <- prcomp(t(dom));str(dom.pca)
+summary(dom.pca)
+biplot(dom.pca)
+plot(dom.pca$rotation[,1], dom.pca$rotation[,2], main="Loadings")
+text(dom.pca$rotation[,1], dom.pca$rotation[,2], labels=rownames(dom))
+plot(dom.pca$x[,1] , dom.pca$x[,2], pch=21, cex=2, bg=lat.color, main="Scores")
+
+#how many prinicpal coordinates are important?
+evplot <- function(ev)
+{
+  # Broken stick model (MacArthur 1957)
+  n <- length(ev)
+  bsm <- data.frame(j=seq(1:n), p=0)
+  bsm$p[1] <- 1/n
+  for (i in 2:n) bsm$p[i] <- bsm$p[i-1] + (1/(n + 1 - i))
+  bsm$p <- 100*bsm$p/n
+  # Plot eigenvalues and % of variation for each axis
+  op <- par(mfrow=c(2,1))
+  barplot(ev, main="Eigenvalues", col="bisque", las=2)
+  abline(h=mean(ev), col="red")
+  legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
+  barplot(t(cbind(100*ev/sum(ev), bsm$p[n:1])), beside=TRUE, 
+          main="% variation", col=c("bisque",2), las=2)
+  legend("topright", c("% eigenvalue", "Broken stick model"), 
+         pch=15, col=c("bisque",2), bty="n")
+  par(op)
+}
+
+#using prcomp, standard deviations are proportional to eigenvalues
+evplot(dom.pca$sdev^2)
+
+#scree plot
+plot(dom.pca$sdev^2/sum(dom.pca$sdev^2), xlab= "# of Components", ylab="% Variance")
+
+## PCoA
+dom.pcoa<-cmdscale(dom.dist,eig=TRUE,add=FALSE,k=7) # set a reasonable value for k<-n-1 (but eigenvalues should be positive)
+cumsum(dom.pcoa$eig)/sum(dom.pcoa$eig)
+plot((dom.pcoa$eig)/sum(dom.pcoa$eig), main="Scree")
+evplot(dom.pcoa$eig)
+plot(dom.pcoa$points[,1], dom.pcoa$points[,2], pch=21, cex=2, bg=lat.color)
+#fit surface variables
+ordisurf(dom.pcoa$points,y=ENVR$Sal, main="DOM with Sal isolines",add=TRUE,col="black")
+grp <- c(rep(1,6), rep(2,6))
+ordihull(dom.pcoa$points, grp)
+
+#vector fitting (least squares fit (Y~ scores1+scores2))
+envfit.pcoa <- envfit(dom.pcoa, choices = c(1,2),envr, na.rm=T, permutations=999)
+envfit.pcoa
+plot(envfit.pcoa, col = "black", font=2)
+
+#As PCoA is not a linear method, we don't get loadings. We can, however, approximate
+#loadings by correlating the original data to the scores
+loadings <- as.data.frame(t(cor(dom.pcoa$points, t(dom))))
+plot(loadings$V1, loadings$V2)
+
+## CA ##
+#other: ca() from mva, ca()labdsv, cca from vegan without explanatory matrix
+library(FactoMineR)
+dom.ca <- CA(dom, ncp=5, graph=T)
+dom.ca
+plot(dom.ca$col$coord[,1], dom.ca$col$coord[,2], pch=21, cex=2, bg=lat.color)
+plot(dom.ca$row$coord[,1], dom.ca$row$coord[,2])
+summary(dom.ca)
+
+## RDA ##
+dom.rda.short <- rda(t(dom)~., envr.short, scale=T)
+dom.rda.short
+dom.rda <- rda(t(dom)~., envr, scale=T)
+dom.rda
+summary(dom.rda)
+plot(dom.rda, scaling="species")
+plot(dom.rda, scaling="sites")
+plot(dom.rda, scaling="symmetric")
+
+## CCA ##
+dom.cca <- cca(t(dom)~., ENVR, scale=T)
+dom.cca
+summary(dom.cca)
+plot(dom.cca, scaling="symmetric")
+
+## CCorA ##
+#read bacteria data - bacteria can influence DOM composition, but DOM availability can also
+#influence bacterial community composition
+BAC <- read.csv("HE361-BAC-short.csv", sep=",", row.names=1)
+bac <- decostand(BAC, method = "total", MARGIN = 2); colSums(bac)
+bac.hell <- decostand(bac, method="hellinger", MARGIN = 2)
+bac.dist <- vegdist(t(bac.hell), method="bray")
+
+ccora <- CCorA(Y=t(bac.hell), X=t(dom.hell), permutations = 99)
+#not enough degrees of freedom...
+
+bac.pcoa <- cmdscale(bac.dist,eig=TRUE,add=FALSE,k=7)
+evplot(bac.pcoa$eig)
+plot(bac.pcoa$points, cex=2, pch=21, bg=lat.color)
+
+# CCorA using PCoA dimensions
+ccora <- CCorA(Y=bac.pcoa$points[,1:3],X=dom.pcoa$points[,1:3], permutations = 999) 
+# the number of PCoA axes taken from scree plots
+ccora$CanCorr #Canonical correlation coefficient
+ccora$p.Pillai; ccora$p.perm
+ccora$Cy[,1] # scores on canonical variate in BAC-space (use to compute colors for the phylogenetic tree)
+ccora$Cx[,1] # scores on canonical variate in DOM-space
+ccora$RDA.adj.Rsq # bimultivariate redundance coefficients of RDAs of Y|X and X|Y
+# for further analysis, correlate back to original data, i.e.:
+str.DOMonDNA<-cor(t(dom),ccora$Cx) # "structure", i.e., correlations of molecules with the canonical variates in DOM-space
+dim(str.DOMonDNA)
+permutest(rda<-rda(bac.pcoa$points[,1:3]~dom.pcoa$points[,1:3]),permutations=999)
+# testing all axes sequentially (preceding axes are taken as constraints)
+anova(rda,by="axis",model="direct",perm.max=999)
+
+## Mantel test ##
+mantel(bac.dist, dom.dist)
+# partial Mantel ##
+mantel.partial(bac.dist, dom.dist, dist(envr$Lat) , method="pearson")
+
+## Procrustes rotation ##
+protest <- protest(bac.pcoa$points, dom.pcoa$points)
+summary(protest)
+plot(protest, kind=1)
+plot(protest, kind=2)
+#can also be run on original data
+
+## variable selection ##
+ordistep.cca.back <- ordistep(dom.cca, perm.max=100, direction="backward")
+#returns oxygen, phaeo, bp, doc
+ordistep.rda.back <- ordistep(dom.rda, perm.max=100, direction="backward")
+#returns sal, fluores, celcounts, doc, tdn
+
+ordistep.rda.both <- ordistep(dom.rda, perm.max=100, direction="both") #set trace=F to suppress output during model building
+#returns Fluores, oxygen, chla, phaeo, TDN, dist
+
+#test multicollinearity using variance inflation factors,
+#should be done before ordistep selection
+vif.cca(dom.cca)
+vif.cca(dom.rda.short)
+</code></pre></p>
                 </div>
-                <hr>
+                <hr>`
                 <br>
 
 
@@ -22663,7 +22865,29 @@ ggplot()+
   resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
   names(resdata)[1] <- "transcriptID"
   write.csv(x=resdata, file="kallisto_tximport_deseq2_results.csv")
+=====================================================================
 
+for(i in 1:nrow(otu_table)){
+ if (test.method == 'wilcox.test') {
+ 	pvalue[i, 1] = p.value = wilcox.test( as.numeric(otu_table[i, s1]), as.numeric(otu_table[i, s2]))$p.value
+ } else if(test.method == 't.test') {
+ 	pvalue[i, 1] = p.value = t.test( as.numeric(otu_table[i, s1]), as.numeric(otu_table[i, s2]))$p.value
+ } else if(test.method == 'kruskal.test') {
+ 	pvalue[i, 1] = p.value = kruskal.test( as.numeric(otu_table[i, s1]), as.numeric(otu_table[i, s2]))$p.value
+ }
+ log2FoldChange[i, 1] = log2( mean( as.numeric(otu_table[i, s1])) - mean( as.numeric(otu_table[i, s2]) ) )
+ }
+ padj = p.adjust(as.vector(pvalue), "fdr", n = length(pvalue))
+ rTable = data.frame(log2FoldChange, pvalue, padj, row.names = rownames(otu_table))
+ # round table
+ s1_mean <- signif(apply(otu_table[rownames(rTable), s1], 1, mean), 4)
+ s2_mean <- signif(apply(otu_table[rownames(rTable), s2], 1, mean), 4)
+ threshold = as.factor(ifelse(rTable$pvalue <= 0.05 & abs(rTable$log2FoldChange) >= 1, ifelse(rTable$log2FoldChange> 1 ,'Up','Down'),'NoSignifi'))
+ rTable = data.frame(s1_mean, s2_mean, rTable[, c("log2FoldChange", "pvalue", "padj")], threshold)
+ # Normalize otu table using vegan
+ otu_table <- vegan::decostand(otu_table, method = norm.method )
+ otu_table <- left_join(otu_table,rTable,by = character())
+	
 </code></pre></p>
                 </div>
                 <hr>
@@ -22671,6 +22895,7 @@ ggplot()+
 
                 <div id="basic-data-access-and-visualization" class="section level2">
                     <h1><span class="header-section-number">4</span> 通路富集：ClusterProfiler</h1>
+
                     <p><pre class='r'><code># Functional analysis using a list of Ensembl gene ID via ClusterProfiler
 # Plotting codes included
 # Input: Tab-delimited gene list (.txt) with header 'Ensembl' - that's it, sth like:
@@ -22689,6 +22914,8 @@ BiocManager::install("clusterProfiler")
 
 # Download mus musculus db (required)
 BiocManager::install("org.Mm.eg.db")
+# org.Hs.eg.db
+BiocManager::install("ReactomePA")
 
 # source required libraries
 library(dplyr)
@@ -22703,12 +22930,13 @@ all_kegg <- data.frame()
 all_go <- data.frame()
 all_mkegg <- data.frame()
 
-setwd("~/Sleuth/")
+setwd("Roundtable-Multivar-Stats/")
 # Read tab delimited file as input: header: Ensembl, A list of EnsemblID gene in the same column
 input_g <- read.delim("test3.txt", header=T)
 
 # Prepare data
 # Get ENTREZID for each ENSEMBL gene ID on column 2 (it will generate itself) - input_e
+names(input_g)[1] <- 'Ensembl'
 input_e <- bitr(input_g$Ensembl, fromType='ENSEMBL', toType='ENTREZID', OrgDb="org.Mm.eg.db")
 input_e
 
@@ -22794,7 +23022,7 @@ ggplot(all_go_top15, aes(x = GeneRatio, y = fct_reorder(Description, GeneRatio))
 # Change labels and get top 15 by p adjust
 all_kegg_top15 <- all_kegg %>% top_n(-15, p.adjust)
 # Convert gene ratio to decimal
-all_kegg_top15$GeneRatio <- sapply(all_top15$GeneRatio, function(x) eval(parse(text=x)))
+all_kegg_top15$GeneRatio <- sapply(all_kegg_top15$GeneRatio, function(x) eval(parse(text=x)))
 all_kegg_top15
 
 # plotting
