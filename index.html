@@ -22346,6 +22346,18 @@
                     <br>
                     <h1><span class="header-section-number"></span> <strong>概论</strong></h1>
                     <li style="text-indent:1em">生物数据，矩阵，标准化:</li>
+                    <br>
+                    <p><pre class='r'><code>
+定性，定量；
+(定类，定序，定距，定比)
+
+从宏观角度分析，数据类型分为定性和定量两种。
+定性：变量是品质特征，如车的品牌，宝马，奔驰，只是为了区分定量：变量是数值，可以量化，如身高体重等。
+
+定量可以分为离散型和连续型。
+离散型一般为计数结果，如抛五次硬币正面的次数。
+连续型一般为测量结果，如手掌长度的测量。
+</code></pre></p>
                     <li style="text-indent:2em">基因表达或者是物种丰富（rpkm/fpkm/tpm;bray-curtis/unifrac），理化因子</li>
                     <br>
                     <li style="text-indent:1em">课程目标：获得差异矩阵，相关性热图绘制，降维PCA，差异通路富集气泡图</li>
@@ -22405,15 +22417,6 @@
                     <h1><span class="header-section-number">1</span> 相关性分析</h1>
                     <p> <strong><i>基础公式与用法</i></strong></p>
                     <p><pre class='r'><code>
-# 公式：
-# x/y为长度n的向量，m_x/m_y对应均值
-
-# 皮尔森公式：
-sum{(x-m_x)(y-m_y)}}{sqrt{sum{(x-m_x)^2}\sum{(y-m_y)^2}}
-
-# 斯皮尔曼:
-sum(x - m_{x})(y_i - m_{y})}{sqrt{sum(x - m_{x})^2 \sum(y - m_{y})^2}} 
-
 # 用法；x, y: 等长度的向量
 cor(x, y, method = c("pearson", "kendall", "spearman"))
 cor.test(x, y, method=c("pearson", "kendall", "spearman"))
