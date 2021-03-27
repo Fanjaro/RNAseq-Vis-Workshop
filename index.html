@@ -22345,36 +22345,48 @@
                 <div id="introduction" class="section level1">
                     <br>
                     <h1><span class="header-section-number"></span> <strong>概论</strong></h1>
+                    <li style="text-indent:1em">生物数据，矩阵，标准化:</li>
+                    <li style="text-indent:2em">基因表达或者是物种丰富（rpkm/fpkm/tpm;bray-curtis/unifrac），理化因子</li>
+                    <br>
+                    <li style="text-indent:1em">课程目标：获得差异矩阵，相关性热图绘制，降维PCA，差异通路富集气泡图</li>
                     <h4>
                         <li>
+
                             <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>① 相关性检验</strong></a>
-                            <p style="text-indent:1em">1. 相关检验用于评估两个或多个变量之间的关联性。</p>
+                            <p style="text-indent:1em">1. 检验方法总览 (数据分布/中心极限定理/大数定律)</p>
+                            <p><img src="statistics.png"></p>
                             <br>
-                            <p style="text-indent:1em">2. 相关检验方法常见有三种(连续变量): Pearson correlation(皮尔森相关性,参数),Spearman rho(斯皮尔曼秩相关，非参数)以及Kendall tau(肯德尔，非参数,等秩较多)</p>
+                            <p style="text-indent:1em">2. 相关检验用于评估两个或多个变量之间的关联性。相关检验方法常见有三种(连续变量):
+                                <li style="text-indent:1em">Pearson correlation(皮尔森相关性,参数)</li>
+                                <li style="text-indent:1em">Spearman rho(斯皮尔曼秩相关，非参数)</li>
+                                <li style="text-indent:1em">Kendall tau(肯德尔，非参数,等秩较多)</li>
+                            </p>
                             <br>
-                            <p style="text-indent:1em">3. 检验方法总览</p>
                         </li>
                         <br>
                         <li>
                             <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>② 降维/排序</strong></a>
                             <p><pre class='r'><code>
 # 提取高纬度数据，得到低纬度的主成因
-# 主成分分析（PCA）是一种非常强大的技术，在数据科学、生物信息学等领域有着广泛的应用。它最初是为了分析大量数据，以便梳理出所分析的逻辑实体之间的差异/关系。
+# 主成分分析（PCA），在数据科学、生物信息学等领域有着广泛的应用。它最初是为了分析大量数据，以便梳理出所分析的逻辑实体之间的差异/关系。
 # 数据的基本结构，而不需要构建任何模型来表示数据。数据的“摘要”是通过一个简化过程得出的，该过程可以将大量变量转换为不相关的较少变量（即“主成分”），
 # 同时能够轻松解释原始数据（Blighe和Lun 2019）（Blighe 2013）
-
-# 都有哪些
-1、只使用物种组成数据的排序称作非限制性排序(unconstrained ordination)
+-----------------------------------------------------------
+# 常见的都有哪些
+1、非限制性排序(unconstrained ordination)
 (1)主成分分析(principal components analysis,PCA)
+
 (2)对应分析(correspondence analysis, CA)
 (3)去趋势对应分析(Detrended correspondence analysis, DCA)
 (3)主坐标分析(principal coordinate analysis, PCoA)
 (4)非度量多维尺度分析(non-metric multi-dimensional scaling, NMDS)
 
-2、同时使用物种和环境因子组成数据的排序叫作限制性排序(constrained ordination)
+(5)Tsne
+(6)Umap
+------------------------------------------------------------
+2、(结合因子)限制性排序(constrained ordination)
 (1)冗余分析(redundancy analysis,RDA)
 (2)典范对应分析(canonical correspondence analysis, CCA)
-
 
                     </code></pre></p>
                         </li>
@@ -22391,35 +22403,29 @@
 
                 <div id="basic-data-access-and-visualization" class="section level2">
                     <h1><span class="header-section-number">1</span> 相关性分析</h1>
-                    <p> <strong><i>软件安装</i></strong></p>
+                    <p> <strong><i>基础公式与用法</i></strong></p>
                     <p><pre class='r'><code>
-
-if(!require(devtools)) install.packages("devtools")
-devtools::install_github("kassambara/ggpubr")
-# 或者
-install.packages("ggpubr")
-# 加载
-library("ggpubr")
-
 # 公式：
 # x/y为长度n的向量，m_x/m_y对应均值
 
 # 皮尔森公式：
 sum{(x-m_x)(y-m_y)}}{sqrt{sum{(x-m_x)^2}\sum{(y-m_y)^2}}
 
-# 斯皮尔曼
+# 斯皮尔曼:
 sum(x - m_{x})(y_i - m_{y})}{sqrt{sum(x - m_{x})^2 \sum(y - m_{y})^2}} 
 
-# 实战部分
-
-# x, y: 等长度的向量
+# 用法；x, y: 等长度的向量
 cor(x, y, method = c("pearson", "kendall", "spearman"))
 cor.test(x, y, method=c("pearson", "kendall", "spearman"))
 
 # 若有缺失值则：
 cor(x, y,  method = "pearson", use = "complete.obs")
+</code></pre></p>
 
-==========================================================================
+                    <hr>
+                    <br>
+                    <p> <strong><i>案例</i></strong></p>
+                    <p><pre class='r'><code>
 # 案例：
 my_data <- mtcars
 head(my_data, 6)
@@ -22434,7 +22440,8 @@ head(my_data, 6)
 
 #可视化
 
-# 先确定数据类型
+# 先确定数据类型，再决定方法
+install.packages("ggpubr")
 library("ggpubr")
 ggscatter(my_data, x = "mpg", y = "wt", 
           add = "reg.line", conf.int = TRUE, 
@@ -22442,12 +22449,24 @@ ggscatter(my_data, x = "mpg", y = "wt",
           xlab = "Miles/(US) gallon", ylab = "Weight (1000 lbs)")
 
 # Q-Q 图 用于确定定样本和正态分布之间的相关性
-
 ggqqplot(my_data$mpg, ylab = "MPG")
 
+# 皮尔森
 res <- cor.test(my_data$wt, my_data$mpg, 
                     method = "pearson")
 res
+
+
+#Pearson's product-moment correlation
+# data:  my_data$wt and my_data$mpg
+# t = -9.559, df = 30, p-value = 1.294e-10
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+# -0.9338264 -0.7440872
+# sample estimates:
+#       cor
+# -0.8676594
+
 # 查看 p.value
 res$p.value
 
@@ -22456,12 +22475,8 @@ res$estimate
 
 # Spearman
 res2 <-cor.test(my_data$wt, my_data$mpg,  method = "spearman")
-res2
-
 # Kendall
 res2 <- cor.test(my_data$wt, my_data$mpg,  method="kendall")
-res2
-
 ==========================================================================
 
 # Hmisc包使用
@@ -22469,20 +22484,15 @@ res2
 install.packages("Hmisc")
 library("Hmisc")
 
-# x 为matrix，方法选一个即可
+# 看下用法
+# help(rcorr)
 rcorr(x, type = c("pearson","spearman"))
 
 res2 <- rcorr(as.matrix(my_data))
 res2
 
 res2$r
-
 res2$P
-
-# Column 1 : row names (variable 1 for the correlation test)
-# Column 2 : column names (variable 2 for the correlation test)
-# Column 3 : the correlation coefficients
-# Column 4 : the p-values of the correlations
 
 # 写一个函数
 flattenCorrMatrix <- function(cormat, pmat) {
@@ -22495,10 +22505,11 @@ flattenCorrMatrix <- function(cormat, pmat) {
     )
 }
 
-# Example of usage :
+# 案例 :
 library(Hmisc)
 res2<-rcorr(as.matrix(mtcars[,1:7]))
 flattenCorrMatrix(res2$r, res2$P)
+
 #     row column         cor            p
 # 1   mpg    cyl -0.85216194 6.112697e-10
 # 2   mpg   disp -0.84755135 9.380354e-10
@@ -22535,14 +22546,11 @@ library(corrplot)
 corrplot(res, type = "upper", order = "hclust", 
          tl.col = "black", tl.srt = 45)
 
-# Insignificant correlation are crossed
-corrplot(res2$r, type="upper", order="hclust", 
-         p.mat = res2$P, sig.level = 0.01, insig = "blank")
-
 # Insignificant correlations are leaved blank
 corrplot(res2$r, type="upper", order="hclust", 
          p.mat = res2$P, sig.level = 0.01, insig = "blank")
 
+=====================================================================
 install.packages("PerformanceAnalytics")
 library("PerformanceAnalytics")
 my_data <- mtcars[, c(1,3,4,5,6,7)]
@@ -22563,14 +22571,13 @@ heatmap(x = res, col = col, symm = TRUE)
 install.packages("devtools", repo="http://cran.us.r-project.org")
 library(devtools)
 install_github("vqv/ggbiplot")
-
 library(ggplot2)
 library(plyr)
 library(scales)
 library(grid)
 library(ggbiplot)
 
-PCA1 <- read.csv("C:/Users/Administrator/Desktop/PCA1.csv")
+PCA1 <- read.csv("PCA1.csv")
 View(PCA1)
 data <- PCA1
 pca <- prcomp(data[,2:9], scale. = TRUE)
@@ -22595,7 +22602,6 @@ theme_bw()+geom_hline(yintercept=0,linetype=3,size=1,color='grey')+
 geom_vline(xintercept=0,linetype=3,size=1,color='grey')+
 labs(x=pc1_sp2,y=pc2_sp2)+scale_color_npg()
 
-
 #dd=rda(log10(otu_table))###此处对物种数据取对数作转化，可根据自己数据选择合适的转化方法
 oo=summary(dd) %>% as.data.frame()
 site=as.data.frame(oo$sites)###提取样方坐标
@@ -22616,8 +22622,6 @@ ggplot()+
        y=paste("PC2(", format(100 *oo$cont[[1]][2,2], digits=4), "%)", sep=""))+
   guides(shape=guide_legend(title = NULL),fill=guide_legend(title = NULL))+
   theme_bw()+theme(panel.grid = element_blank())
-
-
                     </code></pre></p>
                 </div>
                 <hr>
@@ -22625,32 +22629,12 @@ ggplot()+
 
 
                 <div id="basic-data-access-and-visualization" class="section level2">
-                    <h1><span class="header-section-number">3</span> 差异统计：Deseq2</h1>
+                    <h1><span class="header-section-number">3</span> 差异统计</h1>
                     <p><pre class='r'><code># Functional analysis using a list of Ensembl gene ID via ClusterProfiler
 
-#List of packages required:
-packages = c("sleuth", "biomaRt", "tximport", "tximportData", "DESeq2", "argparse")
-
-#If package is not present, then install:
-new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
-if (length(new.packages)) install.packages(new.packages)
-
-#Loading argparse to take in arguments:
-suppressPackageStartupMessages(library("argparse"))
-
-#Create parser object
-parser <- ArgumentParser()
-parser$add_argument("-de", "--differential-expression-analysis", type = "character", default = 'DESeq', help = "Enter Sleuth or DESeq to perform DE analysis. [default %(default)s")
-parser$add_argument("-o", "--kallisto-output-directory", help = "Enter Kallisto's output directory name.")
-parser$add_argument("-m", "--meta-data", help = "Enter file name of meta data.")
-parser$add_argument("-p", "--padj-cutoff", type="double", default=0.05, help = "Enter cutoff value for padj. [default %(default)s]")
-args <- parser$parse_args()
-
-if( tolower(args$differential_expression_analysis) == "deseq" ) {
-
-  print("Using DESeq...")
-
-  #Loading packages:
+# DESeq2
+======================================================================
+  #加载包:
   suppressPackageStartupMessages(library("tximport"))
   suppressPackageStartupMessages(library("tximportData"))
   suppressPackageStartupMessages(library("DESeq2"))
@@ -22662,16 +22646,7 @@ if( tolower(args$differential_expression_analysis) == "deseq" ) {
   files <- file.path(output_dir, samples, "abundance.h5")
   names(files) <- paste0("sample", 1:length(samples))
 
-  #Checking if the files exist, and if they do then use tximport:
-  if (isTRUE(all(file.exists(files)))) {
-    print("Files exist, running tximport...")
-    txi.kallisto <- tximport(files, type = "kallisto", txOut = TRUE)
-    } else {
-    print("Error. Check the path of the input files.")
-    }
-
   #DESeq2
-  print("Running DESeq2...")
   #sampleTable <- data.frame(condition = factor(c(rep("control",5), rep("knockout", 5))))
   data_info <- read.table(file.path("data_info.txt"), header=TRUE)
   sampleTable <- data.frame(condition = factor(dplyr::pull(data_info, sample)))
@@ -22681,86 +22656,20 @@ if( tolower(args$differential_expression_analysis) == "deseq" ) {
   dds <- DESeqDataSetFromTximport(txi.kallisto, sampleTable, ~condition)
 
   #Run the DESeq function:
-  print("Running DESeq function...")
   dds <- DESeq(dds)
 
   #Saving results of DESeq:
   res <- results(dds)
-
-  #Order by the adjusted pvalue:
-  print("Ordering by adjusted pvalue...")
   table(res$padj <- args$padj_cutoff)
   res <- res[order(res$padj), ]
-
-  #Merging with normalized counts data:
-  print("Merging with normalized counts data...")
   resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
   names(resdata)[1] <- "transcriptID"
-
-  #Writing to csv:
-  print("Writing results.csv...")
   write.csv(x=resdata, file="kallisto_tximport_deseq2_results.csv")
-
-} else if (tolower(args$differential_expression_analysis) == "sleuth" ) {
-
-  print("Using Sleuth...")
-
-  #Loading packages:
-  suppressPackageStartupMessages(library("sleuth"))
-  suppressPackageStartupMessages(library("biomaRt"))
-
-  #Function to get ENSEMBL geneID and geneName for the transcripts:
-  transcript2gene <- function(){
-    mart <- biomaRt::useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-    t2g <- biomaRt::getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id", "external_gene_name"), mart = mart)
-    t2g <- dplyr::rename(t2g, target_id = ensembl_transcript_id, ens_gene = ensembl_gene_id, ext_gene = external_gene_name)
-    return(t2g)
-  }
-  t2g <- transcript2gene()
-
-  sample_id <- dir(file.path(args$kallisto_output_directory))
-  kal_dirs <- file.path(args$kallisto_output_directory, sample_id, "abundance.h5")
-  data_info <- read.table(file.path(args$meta_data), header=TRUE)
-  s2c <- dplyr::mutate(data_info, path = kal_dirs)
-
-  #Initializing sleuth object:
-  print("Initializing sleuth object...")
-  so <- sleuth_prep(s2c, target_mapping=t2g)
-
-  #Fitting the reduced model:
-  print("Fitting the reduced model...")
-  so <- sleuth_fit(so, ~1, 'reduced')
-
-  #Fitting the full model:
-  print("Fitting the full model...")
-  so <- sleuth_fit(so, ~condition, 'full')
-
-  #Performing test:
-  print("Performing test...")
-  so <- sleuth_lrt(so, 'reduced', 'full')
-
-  #Examining models that have been fit:
-  models(so)
-
-  #Test results:
-  sleuth_table <- sleuth_results(so, 'reduced:full', 'lrt')
-  sleuth_significant <- dplyr::filter(sleuth_table, qval <= args$padj_cutoff)
-
-  #Writing to csv:
-  print("Writing CSVs...")
-  write.csv(x=sleuth_table, file="kallisto_sleuth_tableResults.csv")
-  write.csv(x=sleuth_significant, file="kallisto_sleuth_significantResults.csv")
-
-} else {
-    print("Error.")
-}
-
 
 </code></pre></p>
                 </div>
                 <hr>
                 <br>
-
 
                 <div id="basic-data-access-and-visualization" class="section level2">
                     <h1><span class="header-section-number">4</span> 通路富集：ClusterProfiler</h1>
@@ -22773,10 +22682,6 @@ if( tolower(args$differential_expression_analysis) == "deseq" ) {
 #ENSMUSG00000051159
 #ENSMUSG00000101878
 #ENSMUSG00000031383
-# Output: 
-# 1. Tab-delimited file with all functional information
-# 2. Pretty plots
-# Author: Raymond Kiu Raymond.Kiu@quadram.ac.uk (2020)
 
 # install Biocmanager
 if (!requireNamespace("BiocManager", quietly = TRUE))
