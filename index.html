@@ -22349,18 +22349,35 @@
                     <br>
                     <p><pre class='r'><code>
 定性，定量；
-(定类，定序，定距，定比)
 
-从宏观角度分析，数据类型分为定性和定量两种。
-定性：变量是品质特征，如车的品牌，宝马，奔驰，只是为了区分定量：变量是数值，可以量化，如身高体重等。
+从宏观角度分析，数据类型分为定性和定量两种:
+定性：变量是品质特征，如车的品牌，宝马，奔驰，只是为了区分
+定量：变量是数值，可以量化，如身高体重等。
 
-定量可以分为离散型和连续型。
+定量可以分为离散型和连续型:
 离散型一般为计数结果，如抛五次硬币正面的次数。
 连续型一般为测量结果，如手掌长度的测量。
 </code></pre></p>
-                    <li style="text-indent:2em">基因表达或者是物种丰富（rpkm/fpkm/tpm;bray-curtis/unifrac），理化因子</li>
+                    <li style="text-indent:2em">矩阵：基因表达丰度+理化因子 | 物种丰度+理化因子</li>
+                    <p><pre class='r'><code>
+稀疏矩阵：
+    若数值为0的元素数目远远多于非0元素的数目，并且非0元素分布没有规律时，则称该矩阵为稀疏矩阵
+
+稠密矩阵:
+    非0元素占所有元素比例较大的矩阵称为稠密矩阵
+
+</code></pre></p>
+                    <li style="text-indent:2em">标准化</li>
+                    <p><pre class='r'><code>
+标准化：
+常见标准化：log10转化，Z-score标准化，hellinger
+比对定量：rpkm/fpkm/tpm
+转换距离矩阵：bray-curtis/unifrac
+
+</code></pre></p>
+
                     <br>
-                    <li style="text-indent:1em">课程目标：获得差异矩阵，相关性热图绘制，降维PCA，差异通路富集气泡图</li>
+
                     <h4>
                         <li>
 
@@ -22405,9 +22422,10 @@
                         <br>
                         <li>
                             <a href="https://github.com/Fanjaro/RNAseq-Vis-Workshop" target="_blank"> <strong>③ 转录表达矩阵</strong></a>
-
                         </li>
                     </h4>
+                    <br>
+                    <li>课程目标：获得差异矩阵，相关性热图绘制，降维PCA，差异通路富集气泡图</li>
                     <br>
                 </div>
                 <br>
@@ -22512,29 +22530,6 @@ flattenCorrMatrix <- function(cormat, pmat) {
 library(Hmisc)
 res2<-rcorr(as.matrix(mtcars[,1:7]))
 flattenCorrMatrix(res2$r, res2$P)
-
-#     row column         cor            p
-# 1   mpg    cyl -0.85216194 6.112697e-10
-# 2   mpg   disp -0.84755135 9.380354e-10
-# 3   cyl   disp  0.90203285 1.803002e-12
-# 4   mpg     hp -0.77616835 1.787838e-07
-# 5   cyl     hp  0.83244747 3.477856e-09
-# 6  disp     hp  0.79094857 7.142686e-08
-# 7   mpg   drat  0.68117189 1.776241e-05
-# 8   cyl   drat -0.69993812 8.244635e-06
-# 9  disp   drat -0.71021390 5.282028e-06
-# 10   hp   drat -0.44875914 9.988768e-03
-# 11  mpg     wt -0.86765939 1.293956e-10
-# 12  cyl     wt  0.78249580 1.217567e-07
-# 13 disp     wt  0.88797992 1.222311e-11
-# 14   hp     wt  0.65874785 4.145833e-05
-# 15 drat     wt -0.71244061 4.784268e-06
-# 16  mpg   qsec  0.41868404 1.708199e-02
-# 17  cyl   qsec -0.59124213 3.660527e-04
-# 18 disp   qsec -0.43369791 1.314403e-02
-# 19   hp   qsec -0.70822340 5.766250e-06
-# 20 drat   qsec  0.09120482 6.195823e-01
-# 21   wt   qsec -0.17471591 3.388682e-01
 
 # 将显著性数值转化为图形:
 symnum(x, cutpoints = c(0.3, 0.6, 0.8, 0.9, 0.95),
