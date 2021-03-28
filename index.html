@@ -22335,8 +22335,8 @@
                     <a href="http://www.cookbook-r.com" target="_blank">
                         <p><strong><i>http://www.cookbook-r.com</i></strong>
                     </a>
-                    <p style="text-indent:2em">《《R语言核心手册》》</p>
-                    <p style="text-indent:2em">《《ggplot2》》</p>
+                    <p style="text-indent:2em">《R语言核心手册》</p>
+                    <p style="text-indent:2em">《ggplot2》</p>
                     </p>
                 </div>
 
@@ -22380,6 +22380,7 @@
 数据中心化：  scale(data,center=T,scale=F) 
 数据标准化：  scale(data,center=T,scale=T) 或默认参数scale(data)
 
+# data+1：避免底为0
 dat <- log(data+1, 2)	    #log2
 dat <- log(data+1, exp(1))  #ln
 dat <- log(data+1, 10)	    #log10
